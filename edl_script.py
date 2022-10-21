@@ -67,11 +67,11 @@ class UI:
         table = []
         names = [""]
         row = []
-        for x in lines:
+        for index, x in enumerate(lines):
             y = x.split()
             if len(y) == 0:
                 continue
-            if x.count(':') == 12 and not "*" in y[0]:
+            if (x.count(':') == 12 and not "*" in y[0]) and (index != len(lines) and "FROM" in lines[index+1]):
                 s = y[len(y)-4:len(y)]
                 for t in s:
                     parts = t.split(":")
