@@ -39,7 +39,7 @@ class UI:
 
         self.data = None
         self.clipNum = 0
-        self.timecodes=[]
+        self.timecodes=[[],[]]
         self.init_table_ui(self.convert_file_to_table(self.open_file()))
         # starts the mainloop
         self.window.mainloop()
@@ -73,10 +73,10 @@ class UI:
                 continue
             if (x.count(':') == 12 and not "*" in y[0]) and (index != len(lines) and "FROM" in lines[index+1]):
                 s = y[len(y)-4:len(y)]
-                for t in s:
+                for t_i, t in enumerate(s):
                     parts = t.split(":")
-                    self.timecodes.append((len(table), len(row), TimeCode([int(parts[0]),int(parts[1]),int(parts[2]),int(parts[3])], 24)))
-                    row.append(self.timecodes[-1][2])
+                    self.timecodes[int(t_i/2)].append((len(table), len(row), TimeCode([int(parts[0]),int(parts[1]),int(parts[2]),int(parts[3])], 24)))
+                    row.append(self.timecodes[int(t_i/2)][-1][2])
             elif "*" in y[0] and "FROM" in y[1]:
                 t=0
                 name=""
@@ -96,36 +96,43 @@ class UI:
     def validate(self, var, regex):
         return re.search(regex, var)
 
-    def apply_offset(self, off_var, fps_var):
+    def apply_offset(self, off_vars, fps_var):
         if self.validate(fps_var.get(), "^\d+$") is None:
             tk.messagebox.showwarning(title="Alert", message="Given FPS not valid.")
             return
-        if self.validate(off_var.get(), "^-?[0-9][0-9]:[0-5][0-9]:[0-5][0-9]:[0-9][0-9]$") is None:
-            tk.messagebox.showwarning(title="Alert", message="Given timecode not valid.")
+        if self.validate(off_vars[0].get(), "^-?[0-9][0-9]:[0-5][0-9]:[0-5][0-9]:[0-9][0-9]$") is None:
+            tk.messagebox.showwarning(title="Alert", message="Given source timecode not valid.")
             return
-        parts = off_var.get().split(":")
-        sign = 1
-        if parts[0][0] == "-":
-            parts[0]=parts[0][1:]
-            sign = -1
-        for i in range(len(parts)):
-            parts[i] = int(parts[i])*sign
+        if self.validate(off_vars[1].get(), "^-?[0-9][0-9]:[0-5][0-9]:[0-5][0-9]:[0-9][0-9]$") is None:
+            tk.messagebox.showwarning(title="Alert", message="Given destination timecode not valid.")
+            return
+        parts=[[],[]]
+        for i, var in enumerate(off_vars):
+            parts[i] = var.get().split(":")
+            sign = 1
+            if parts[i][0][0] == "-":
+                parts[i][0]=parts[i][0][1:]
+                sign = -1
 
-        for row, col, timecode in self.timecodes:
-            timecode.change_framerate(int(fps_var.get()))
-            timecode.push(parts)
-            self.data[row][col].set(timecode)
+            for j in range(len(parts[i])):
+                parts[i][j] = int(parts[i][j])*sign
+
+            for row, col, timecode in self.timecodes[i]:
+                timecode.change_framerate(int(fps_var.get()))
+                timecode.push(parts[i])
+                self.data[row][col].set(timecode)
     
     def init_table_ui(self, table):
         lower_frame = tk.Frame(self.root)
         lower_frame.pack(side=tk.BOTTOM)
 
-        offset_variable = tk.StringVar(lower_frame)
+        source_offset_variable = tk.StringVar(lower_frame)
+        dest_offset_variable = tk.StringVar(lower_frame)
         fps_variable = tk.StringVar(lower_frame)
 
         tk.Label(
             lower_frame,
-            text="Offset:",
+            text="Source offset:",
             padx=2
         ).pack(
             side=tk.LEFT
@@ -133,12 +140,29 @@ class UI:
 
         tk.Entry(
             lower_frame,
-            textvariable=offset_variable,
+            textvariable=source_offset_variable,
             width=12
         ).pack(
             side=tk.LEFT
         )
-        offset_variable.set("00:00:00:00")
+        source_offset_variable.set("00:00:00:00")
+
+        tk.Label(
+            lower_frame,
+            text="Destination offset:",
+            padx=2
+        ).pack(
+            side=tk.LEFT
+        )
+
+        tk.Entry(
+            lower_frame,
+            textvariable=dest_offset_variable,
+            width=12
+        ).pack(
+            side=tk.LEFT
+        )
+        dest_offset_variable.set("00:00:00:00")
         
         tk.Label(
             lower_frame,
@@ -161,7 +185,7 @@ class UI:
         tk.Button(
             lower_frame,
             text="Apply",
-            command = lambda : self.apply_offset(offset_variable, fps_variable)
+            command = lambda : self.apply_offset((source_offset_variable, dest_offset_variable), fps_variable)
         ).pack(
             side=tk.LEFT
         )
