@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "edl-conversion"
+version = "0.1.0"
+description = "This is a tool for converting .edl files into a readable grid of clips and their timecodes."
+authors = ["PurPul <axbergsamuel@gmail.com>"]
+readme = "README.md"
+packages = [{include = "edl_conversion"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+invoke = "^1.7.3"
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.15.7"
+pytest = "^7.2.0"
+coverage = "^6.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,8 +1,7 @@
 import tkinter as tk
 import re
 from tkinter import filedialog
-from time_code import TimeCode
-
+from entities import TimeCode, Title, EntryRow, AdaptiveList
 
 class UI:
     def __init__(self):
@@ -37,15 +36,19 @@ class UI:
         # creates a window for the frame in the canvas and anchors it to the topleft of the window
         self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
 
-        self.data = None
+        #self.entries = []
+        self.table = None
+        self.title_list = None
+        self.locked = True
         self.clipNum = 0
         self.timecodes=[[],[]]
-        self.init_table_ui(self.convert_file_to_table(self.open_file()))
+        self.convert_file_to_table(self.open_file())
+        self.init_table_ui()
         # starts the mainloop
         self.window.mainloop()
 
     def on_configure(self, event):
-        self.canvas.configure(scrollregion=self.frame.bbox('all'))
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
     def open_file(self):
         # opens the filebrowser and assgines selected file as a string to variable 'file_path_string'
@@ -63,10 +66,12 @@ class UI:
     def convert_file_to_table(self, lines):
         # Filters out relevant data from the strings in 'lines' and adds them to specific cells in the n*5 matrix 'table' where n is the amount of clips.
         # The amount of clips are then stored in the variable clipNum as an integer.
-        # Unique source file names are stored as strings in the list 'names'
-        table = []
-        names = [""]
-        row = []
+        # Unique source file titles are stored as strings in the list 'titles'
+        table = AdaptiveList(self.frame)
+        title_list = AdaptiveList(self.frame)
+        table.add_item(None)
+        titles = {}
+        row = EntryRow(table.frame)
         for index, x in enumerate(lines):
             y = x.split()
             if len(y) == 0:
@@ -75,23 +80,27 @@ class UI:
                 s = y[len(y)-4:len(y)]
                 for t_i, t in enumerate(s):
                     parts = t.split(":")
-                    self.timecodes[int(t_i/2)].append((len(table), len(row), TimeCode([int(parts[0]),int(parts[1]),int(parts[2]),int(parts[3])], 24)))
-                    row.append(self.timecodes[int(t_i/2)][-1][2])
+                    self.timecodes[int(t_i/2)].append((len(table), len(row), TimeCode([int(parts[0]),int(parts[1]),int(parts[2]),int(parts[3])], 24, tk.StringVar(self.frame))))
+                    row.add_timecode(self.timecodes[int(t_i/2)][-1][2])
             elif "*" in y[0] and "FROM" in y[1]:
                 t=0
-                name=""
+                title = ""
                 for t in range(4, len(y)):
-                    if t!=4:
-                        name+="_"
-                    name+=y[t]
+                    if t != 4:
+                        title += "_"
+                    title += y[t]
 
-                if name not in names:
-                    names.append(name)
-                row.append(name)
-                table.append(row)
-                self.clipNum+=1
-                row=[]
-        return table
+                if title not in titles:
+                    titles[title] = Title(tk.StringVar(row.frame, value = title))
+                    title_list.add_item(tk.Entry(title_list.frame, textvariable=titles[title].str_var, width=len(titles[title])))
+
+                row.set_title(titles[title])
+                table.add_item(row)
+                self.clipNum += 1
+                row = EntryRow(table.frame)
+
+        self.table = table
+        self.title_list = title_list
     
     def validate(self, var, regex):
         return re.search(regex, var)
@@ -120,9 +129,23 @@ class UI:
             for row, col, timecode in self.timecodes[i]:
                 timecode.change_framerate(int(fps_var.get()))
                 timecode.push(parts[i])
-                self.data[row][col].set(timecode)
-    
-    def init_table_ui(self, table):
+                timecode.str_var
+    '''
+    def toggle_lock(self, button):
+        state = ""
+        if self.locked:
+            self.locked = False
+            button.configure(text="Lock entries")
+            state = "normal"
+        else:
+            self.locked = True
+            button.configure(text="Unlock entries")
+            state = "readonly"
+        for entry in self.entries:
+            entry.configure(state=state)'''
+        
+
+    def init_table_ui(self):
         lower_frame = tk.Frame(self.root)
         lower_frame.pack(side=tk.BOTTOM)
 
@@ -191,20 +214,27 @@ class UI:
         )
         
         # initializes the entry widget, which displays the amount of clips, as a child of 'frame'
-        clip_text_var = tk.StringVar(self.frame)
-        clipNumEntered = tk.Entry(self.frame, width = 12, textvariable=clip_text_var, state="readonly")
-        clipNumEntered.grid(column = 0, row = 1,sticky=tk.W)
+        clip_text_var = tk.StringVar(self.table.frame)
+        clipNumEntered = tk.Entry(self.table.frame, width = 12, textvariable=clip_text_var, state="readonly")
+        self.table.set_item(0, clipNumEntered)
         clip_text_var.set(self.clipNum)
 
+        # This button locks/unlocks the entry widgets for editing.
+        lock_button = tk.Button(
+            lower_frame,
+            text="Unlock entries"
+        )
+        '''
+        lock_button.configure(
+            command = lambda : self.toggle_lock(lock_button)
+        )
+        lock_button.pack(
+            side=tk.LEFT
+        )'''
+        self.title_list.pack()
         # Initializes the grid of entry widgets, which displays the matrix 'A', as a child of 'frame'
-        self.data=[None]*len(table)
-        for mRow, x in enumerate(table):
-            self.data[mRow]=[None]*len(x)
-            for mCol, y in enumerate(x):
-                self.data[mRow][mCol] = tk.StringVar(self.frame)
-                tk.Entry(self.frame, width = len(y)+1, textvariable=self.data[mRow][mCol], state="readonly").grid(column = mCol, row = mRow+2,sticky=tk.W)
+        self.table.pack()
                 
-                self.data[mRow][mCol].set(y)
 
 if __name__ == "__main__":
     new_ui = UI()

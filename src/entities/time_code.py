@@ -1,21 +1,23 @@
 class TimeCode():
-    def __init__(self, data, rate):
+    def __init__(self, data, rate, string_var):
         self.__origin = data
         self.__framerate = rate
-        self.__current_offset = 0
         self.__timecode = [None, None, None, None]
+        self.__string_var = string_var
         self.read_origin()
-    
-    def __str__(self):
-        s = ""
+
+    @property
+    def str_var(self):
+        content = ""
         for i in self.__timecode:
             part = str(i)
             if len(part) == 1:
                 part = "0"+part
-            s+=part+":"
-        s = s[:-1]
-        return s
-    
+            content+=part+":"
+        content = content[:-1]
+        self.__string_var.set(content)
+        return self.__string_var
+
     def __len__(self):
         return 11
 
@@ -33,7 +35,11 @@ class TimeCode():
         cycles=0
         max_vals = [None, 60, 60, self.__framerate]
         for i in reversed(range(0, len(self.__timecode))):
-            self.__timecode[i], cycles = self.addition(self.__timecode[i], offset[i]+cycles, max_vals[i])
+            self.__timecode[i], cycles = self.addition(
+                self.__timecode[i],
+                offset[i]+cycles,
+                max_vals[i]
+            )
 
     def addition(self, value_1, value_2, max_val):
         ret = value_1 + value_2
