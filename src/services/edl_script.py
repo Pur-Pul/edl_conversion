@@ -68,7 +68,7 @@ class UI:
         # The amount of clips are then stored in the variable clipNum as an integer.
         # Unique source file titles are stored as strings in the list 'titles'
         table = AdaptiveList(self.frame)
-        title_list = AdaptiveList(self.frame)
+        title_list = AdaptiveList(self.frame, linked_list=table)
         table.add_item(None)
         titles = {}
         row = EntryRow(table.frame)

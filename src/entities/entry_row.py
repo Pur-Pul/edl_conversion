@@ -14,6 +14,9 @@ class EntryRow:
     def set_title(self, title):
         self.__title = [title]
         self.construct()
+    
+    def get(self):
+        return self.__title[0].str_var.get()
 
     def construct(self):
         for i, item in enumerate(self.__timecodes + self.__title):
@@ -38,6 +41,11 @@ class EntryRow:
         self.__frame.grid(column=column, row=row, sticky=sticky)
         for item in self.__row:
             item.pack(side = tk.LEFT)
+
+    def __getattr__(self, method_name: str):
+        def method(*args, **kwargs):
+            return getattr(self.__frame, method_name)(*args, **kwargs)
+        return method
 
     @property
     def frame(self):
