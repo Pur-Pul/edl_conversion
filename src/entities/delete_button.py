@@ -13,9 +13,10 @@ class DeleteButton:
         )
 
     def remove(self):
+        print(self.__master_list.get_items())
         to_remove = self.__master_list.get_items()[self.__idx].get()
         print("remove: ", to_remove)
-        for i, item in enumerate(self.__linked_list.get_items()):
+        for i, item in self.__linked_list.get_items().items():
             if item.get() == to_remove:
                 print(item)
                 self.__linked_list.remove_item(i)
