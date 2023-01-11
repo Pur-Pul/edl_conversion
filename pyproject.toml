@@ -15,6 +15,7 @@ invoke = "^1.7.3"
 pylint = "^2.15.7"
 pytest = "^7.2.0"
 coverage = "^6.5.0"
+cx-freeze = "^6.13.1"
 
 [build-system]
 requires = ["poetry-core"]

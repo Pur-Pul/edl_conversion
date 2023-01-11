@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock
-from entities import AdaptiveList
+from src import AdaptiveList
 
 class TestAdaptiveList(unittest.TestCase):
     def setUp(self) -> None:

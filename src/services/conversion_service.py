@@ -1,4 +1,4 @@
-from entities import AdaptiveList, EntryRow, TimeCode, Title
+from src import AdaptiveList, EntryRow, TimeCode, Title
 import tkinter as tk
 
 class ConversionService:
