@@ -16,7 +16,14 @@ class ConversionService:
         # Unique source file titles are stored as strings in the list 'titles'
         self._table.clear()
         self._title_list.clear()
-        self._table.add_item(None)
+        self._table.add_item(
+            tk.Entry(
+                self._table.frame,
+                width = 12,
+                textvariable=self._clip_num_var,
+                state="readonly"
+            )
+        )
         row = EntryRow(self._table.frame)
         for index, line in enumerate(lines):
             words = line.split()

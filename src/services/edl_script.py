@@ -42,8 +42,8 @@ class UI:
         
         conversion_service = ConversionService(self.frame)
         conversion_service.convert_file_to_table(self.open_file())
-        self.clip_num = conversion_service.get_clip_num()
         self.title_list = conversion_service.get_title_list()
+        self.clip_num = conversion_service.get_clip_num()
         self.table = conversion_service.get_table()
         self.timecodes = conversion_service.get_timecodes()
         self.table.bind('<<row_removed>>', self.on_row_removal)
@@ -108,6 +108,10 @@ class UI:
         dest_offset_variable = tk.StringVar(lower_frame, value="00:00:00:00")
         fps_variable = tk.StringVar(lower_frame, value=24)
 
+        # initializes the entry widget, which displays the amount of clips, as a child of 'frame'
+        #self.title_list.lift()
+        #self.table.lift()
+
         tk.Label(
             lower_frame,
             text="Source offset:",
@@ -163,15 +167,6 @@ class UI:
         ).pack(
             side=tk.LEFT
         )
-        
-        # initializes the entry widget, which displays the amount of clips, as a child of 'frame'
-        clip_num_entry = tk.Entry(
-            self.table.frame,
-            width = 12,
-            textvariable=self.clip_num,
-            state="readonly"
-        )
-        self.table.set_item(0, clip_num_entry)
 
         self.title_list.pack()
         # Initializes the grid of entry widgets, which displays the matrix 'A', as a child of 'frame'
