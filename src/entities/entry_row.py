@@ -41,6 +41,10 @@ class EntryRow:
         self.__frame.grid(column=column, row=row, sticky=sticky)
         for item in self.__row:
             item.pack(side = tk.LEFT)
+    
+    def lift(self):
+        for item in self.__row:
+            item.lift()
 
     def __getattr__(self, method_name: str):
         def method(*args, **kwargs):

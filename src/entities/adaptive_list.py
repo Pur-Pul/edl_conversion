@@ -43,6 +43,10 @@ class AdaptiveList:
             if self.__buttons.values():
                 list(self.__buttons.values())[i].grid(column = 1, row = i, sticky = tk.W)
     
+    def lift(self):
+        for item in self.__items.values():
+            item.lift()
+
     def __getattr__(self, method_name: str):
         def method(*args, **kwargs):
             return getattr(self.frame, method_name)(*args, **kwargs)
